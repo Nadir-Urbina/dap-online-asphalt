@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ASPHALT_MIXES, PICKUP_LOCATIONS } from '@/data/constants';
-import { AsphaltMix, PickupLocation, CustomerDetails } from '@/types';
+import { AsphaltMix } from '@/types';
 
 const orderSchema = z.object({
   mixType: z.string().min(1, 'Please select an asphalt mix'),

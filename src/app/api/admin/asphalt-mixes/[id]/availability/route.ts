@@ -3,8 +3,9 @@ import { updateAsphaltMixAvailability } from '@/lib/firestore';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     const { availableForOrders } = await request.json();
 

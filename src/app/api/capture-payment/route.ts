@@ -29,6 +29,17 @@ export async function POST(request: NextRequest) {
       amount_to_capture: captureAmount,
     });
 
+    // Prepare response with message based on capture scenario
+    let message: string;
+    let excess_amount: number | undefined;
+
+    if (actualAmountCents <= authorizedAmountCents) {
+      message = `Payment captured successfully: $${(captureAmount / 100).toFixed(2)}`;
+    } else {
+      message = `Captured maximum authorized amount: $${(captureAmount / 100).toFixed(2)}. Actual amount of $${actualAmount.toFixed(2)} exceeded authorization by $${(actualAmount - authorizedAmount).toFixed(2)}.`;
+      excess_amount = actualAmount - authorizedAmount;
+    }
+
     const response = {
       success: true,
       captured_amount: captureAmount,
@@ -36,15 +47,9 @@ export async function POST(request: NextRequest) {
       authorized_amount_dollars: authorizedAmount,
       actual_amount_dollars: actualAmount,
       payment_intent: paymentIntent,
+      message,
+      ...(excess_amount !== undefined && { excess_amount }),
     };
-
-    // Add message based on capture scenario
-    if (actualAmountCents <= authorizedAmountCents) {
-      response.message = `Payment captured successfully: $${(captureAmount / 100).toFixed(2)}`;
-    } else {
-      response.message = `Captured maximum authorized amount: $${(captureAmount / 100).toFixed(2)}. Actual amount of $${actualAmount.toFixed(2)} exceeded authorization by $${(actualAmount - authorizedAmount).toFixed(2)}.`;
-      response.excess_amount = actualAmount - authorizedAmount;
-    }
 
     return NextResponse.json(response);
 

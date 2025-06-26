@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function NavBar() {
@@ -32,7 +33,7 @@ export default function NavBar() {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-8">
-            <a href="/" className="nav-link text-sm lg:text-base">Orders</a>
+            <Link href="/" className="nav-link text-sm lg:text-base">Orders</Link>
             <a href="#" className="nav-link text-sm lg:text-base">Products</a>
             
             {user ? (
@@ -105,13 +106,13 @@ export default function NavBar() {
       {mobileMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-bg-surface border-t border-border-primary">
-            <a
+            <Link
               href="/"
               className="block px-3 py-2 text-base font-medium text-text-secondary hover:text-secondary hover:bg-bg-surface-light rounded-md"
               onClick={() => setMobileMenuOpen(false)}
             >
               Orders
-            </a>
+            </Link>
             <a
               href="#"
               className="block px-3 py-2 text-base font-medium text-text-secondary hover:text-secondary hover:bg-bg-surface-light rounded-md"

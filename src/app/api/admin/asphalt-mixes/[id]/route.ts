@@ -3,11 +3,12 @@ import { getAsphaltMix, updateAsphaltMix, deactivateAsphaltMix } from '@/lib/fir
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     const mix = await getAsphaltMix(params.id);
-
+    
     if (!mix) {
       return NextResponse.json(
         { error: 'Asphalt mix not found' },
@@ -15,10 +16,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      mix
-    });
+    return NextResponse.json({ mix });
   } catch (error) {
     console.error('Error fetching asphalt mix:', error);
     return NextResponse.json(
@@ -30,15 +28,16 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
-    const updates = await request.json();
-
-    // Remove fields that shouldn't be updated directly
-    const { id, createdAt, updatedAt, ...validUpdates } = updates;
-
-    await updateAsphaltMix(params.id, validUpdates);
+    const mixData = await request.json();
+    
+    // Remove readonly fields
+    const { id, createdAt, updatedAt, ...updateData } = mixData;
+    
+    await updateAsphaltMix(params.id, updateData);
 
     return NextResponse.json({
       success: true,
@@ -55,8 +54,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
     await deactivateAsphaltMix(params.id);
 

@@ -3,21 +3,21 @@ import { updateProductStock, getProduct } from '@/lib/firestore';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params;
   try {
-    const { id } = params;
-    const body = await request.json();
+    const { stock } = await request.json();
     
-    if (body.stock === undefined || isNaN(parseInt(body.stock))) {
+    if (stock === undefined || isNaN(parseInt(stock))) {
       return NextResponse.json(
         { error: 'Valid stock number is required' },
         { status: 400 }
       );
     }
 
-    const stock = parseInt(body.stock);
-    if (stock < 0) {
+    const stockInt = parseInt(stock);
+    if (stockInt < 0) {
       return NextResponse.json(
         { error: 'Stock cannot be negative' },
         { status: 400 }
@@ -25,7 +25,7 @@ export async function PUT(
     }
 
     // Check if product exists
-    const existingProduct = await getProduct(id);
+    const existingProduct = await getProduct(params.id);
     if (!existingProduct) {
       return NextResponse.json(
         { error: 'Product not found' },
@@ -33,18 +33,18 @@ export async function PUT(
       );
     }
 
-    await updateProductStock(id, stock);
+    await updateProductStock(params.id, stockInt);
     
     return NextResponse.json(
       { 
         message: 'Stock updated successfully',
-        newStock: stock,
+        newStock: stockInt,
         previousStock: existingProduct.stock 
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error('Error updating product stock:', error);
+  } catch (error: unknown) {
+    console.error('Error updating stock:', error);
     return NextResponse.json(
       { error: 'Failed to update stock' },
       { status: 500 }

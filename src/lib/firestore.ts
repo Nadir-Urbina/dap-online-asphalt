@@ -35,7 +35,7 @@ export const createOrder = async (orderData: {
 }): Promise<string> => {
   try {
     const order: Omit<Order, 'id'> = {
-      customerId: orderData.customerId || null, // Include customer ID if logged in, null for guests
+      customerId: orderData.customerId || undefined, // Include customer ID if logged in, undefined for guests
       customerDetails: orderData.customerDetails,
       items: orderData.items,
       pickupLocation: {} as PickupLocation, // Will be populated with full location data
@@ -235,9 +235,9 @@ export const getAllUsers = async (): Promise<User[]> => {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      console.log('User data from Firestore:', { id: doc.id, ...data });
+      console.log('User data from Firestore:', { uid: doc.id, ...data });
       users.push({
-        id: doc.id,
+        uid: doc.id,
         ...data,
         createdAt: data.createdAt?.toDate(),
       } as User);
@@ -267,7 +267,7 @@ export const getUsersByDomain = async (domain: string = '@duvalasphalt.com'): Pr
       const data = doc.data();
       if (data.email.includes(domain)) {
         users.push({
-          id: doc.id,
+          uid: doc.id,
           ...data,
           createdAt: data.createdAt?.toDate(),
         } as User);
@@ -286,7 +286,7 @@ export const deleteUser = async (userId: string): Promise<void> => {
   try {
     const docRef = doc(db, USERS_COLLECTION, userId);
     await updateDoc(docRef, {
-      active: false,
+      isActive: false,
       deactivatedAt: Timestamp.fromDate(new Date())
     });
   } catch (error) {
@@ -306,8 +306,8 @@ export const createProduct = async (productData: Omit<Product, 'id' | 'createdAt
 
     const docRef = await addDoc(collection(db, PRODUCTS_COLLECTION), {
       ...product,
-      createdAt: Timestamp.fromDate(product.createdAt),
-      updatedAt: Timestamp.fromDate(product.updatedAt),
+      createdAt: Timestamp.fromDate(product.createdAt!),
+      updatedAt: Timestamp.fromDate(product.updatedAt!),
     });
 
     return docRef.id;
@@ -468,8 +468,8 @@ export const createAsphaltMix = async (mixData: Omit<AsphaltMix, 'id' | 'created
 
     const docRef = await addDoc(collection(db, ASPHALT_MIXES_COLLECTION), {
       ...mix,
-      createdAt: Timestamp.fromDate(mix.createdAt),
-      updatedAt: Timestamp.fromDate(mix.updatedAt),
+      createdAt: Timestamp.fromDate(mix.createdAt!),
+      updatedAt: Timestamp.fromDate(mix.updatedAt!),
     });
 
     return docRef.id;

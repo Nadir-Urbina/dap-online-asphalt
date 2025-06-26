@@ -276,7 +276,7 @@ export default function UserManagement() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <tr key={user.uid} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -305,9 +305,9 @@ export default function UserManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        user.active !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        user.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {user.active !== false ? 'Active' : 'Inactive'}
+                        {user.isActive !== false ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -318,13 +318,13 @@ export default function UserManagement() {
                         onClick={() => {
                           // Add deactivate user functionality
                           if (window.confirm('Are you sure you want to deactivate this user?')) {
-                            handleDeactivateUser(user.id!);
+                            handleDeactivateUser(user.uid!);
                           }
                         }}
                         className="text-red-600 hover:text-red-900"
-                        disabled={user.active === false}
+                        disabled={user.isActive === false}
                       >
-                        {user.active !== false ? 'Deactivate' : 'Deactivated'}
+                        {user.isActive !== false ? 'Deactivate' : 'Deactivated'}
                       </button>
                     </td>
                   </tr>
