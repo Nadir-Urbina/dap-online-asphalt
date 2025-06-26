@@ -1,15 +1,22 @@
 const { initializeApp } = require('firebase/app');
 const { getFirestore, collection, addDoc, Timestamp } = require('firebase/firestore');
 
-// Firebase configuration
+// Firebase configuration from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyD9YWHvJ7oQBBHNVIcR9F7l_D5W6PYJXhk",
-  authDomain: "dap-online-plant.firebaseapp.com",
-  projectId: "dap-online-plant",
-  storageBucket: "dap-online-plant.firebasestorage.app",
-  messagingSenderId: "843329550936",
-  appId: "1:843329550936:web:ad5d9e6a8c1c9b5d123456"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "your-api-key-here",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "dap-online-plant.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "dap-online-plant",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "dap-online-plant.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "843329550936",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:843329550936:web:ad5d9e6a8c1c9b5d123456"
 };
+
+// Check if required environment variables are set
+if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+  console.warn('⚠️  NEXT_PUBLIC_FIREBASE_API_KEY not set. Using placeholder value.');
+  console.log('To run this script with real Firebase, set the following environment variables:');
+  console.log('NEXT_PUBLIC_FIREBASE_API_KEY, NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN, NEXT_PUBLIC_FIREBASE_PROJECT_ID, etc.');
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
