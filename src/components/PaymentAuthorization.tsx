@@ -96,22 +96,22 @@ const PaymentForm = ({ amount, onSuccess, onError, customerEmail }: PaymentAutho
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
-        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Payment Authorization</h3>
+    <div className="max-w-md mx-auto px-4 sm:px-6">
+      <div className="card p-6">
+        <h3 className="heading-md mb-4">Payment Authorization</h3>
         
-        <div className="mb-3 sm:mb-4">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 sm:p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+        <div className="mb-6">
+          <div className="bg-secondary/10 border border-secondary/30 rounded-lg p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0 mt-1">
+                <svg className="h-5 w-5 text-secondary" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-xs sm:text-sm font-medium text-yellow-800">Authorization Only</h3>
-                <div className="mt-2 text-xs sm:text-sm text-yellow-700">
-                  <p>Your card will be authorized for <strong>${amount.toFixed(2)}</strong> but not charged. 
+                <h4 className="text-sm font-semibold text-text-primary mb-2">Authorization Only</h4>
+                <div className="text-sm text-text-secondary leading-relaxed">
+                  <p>Your card will be authorized for <strong className="text-secondary">${amount.toFixed(2)}</strong> but not charged. 
                   The final charge will be processed after order confirmation based on actual tonnage delivered.</p>
                 </div>
               </div>
@@ -119,12 +119,12 @@ const PaymentForm = ({ amount, onSuccess, onError, customerEmail }: PaymentAutho
           </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="form-label">
               Card Details
             </label>
-            <div className="border border-gray-300 rounded-md p-3 bg-white">
+            <div className="form-input p-4">
               <CardElement options={cardElementOptions} />
             </div>
             {cardError && (
@@ -135,13 +135,13 @@ const PaymentForm = ({ amount, onSuccess, onError, customerEmail }: PaymentAutho
           <button
             type="submit"
             disabled={!stripe || isLoading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full btn-primary py-4 text-lg"
           >
             {isLoading ? 'Authorizing...' : `Authorize $${amount.toFixed(2)}`}
           </button>
         </form>
 
-        <div className="mt-4 text-xs text-gray-500">
+        <div className="mt-6 text-xs text-text-muted space-y-1">
           <p>🔒 Your payment information is secure and encrypted.</p>
           <p>You will not be charged until your order is confirmed and ready for pickup.</p>
         </div>

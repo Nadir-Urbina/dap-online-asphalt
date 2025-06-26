@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Inter } from "next/font/google";
+import Image from "next/image";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import NavBar from "@/components/NavBar";
@@ -17,8 +18,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DAP Online Plant - Asphalt & Equipment Store",
-  description: "Order asphalt mixes, tools, and plant equipment online. Professional asphalt solutions for your construction needs.",
+  title: "Duval Asphalt - Online Plant Store",
+  description: "Order premium asphalt mixes, tools, and plant equipment online from Duval Asphalt. Professional asphalt solutions for your construction needs.",
 };
 
 export const viewport: Viewport = {
@@ -44,6 +45,27 @@ export default function RootLayout({
         </AuthProvider>
         <footer className="bg-bg-surface text-text-primary py-6 sm:py-8 border-t border-border-primary">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Logo and Company Info */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-border-secondary">
+              <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
+                <Image
+                  src="/DA_Logo.jpeg"
+                  alt="Duval Asphalt"
+                  width={150}
+                  height={50}
+                  className="h-12 w-auto object-contain mb-2"
+                />
+                <p className="text-xs sm:text-sm text-text-muted text-center sm:text-left">
+                  Professional Asphalt Solutions
+                </p>
+              </div>
+              <div className="text-center sm:text-right text-xs sm:text-sm text-text-secondary">
+                <p>Phone: (904) 555-0123</p>
+                <p>Email: orders@duvalasphalt.com</p>
+                <p>Emergency: (904) 555-0124</p>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               <div>
                 <h3 className="heading-sm text-secondary mb-3 sm:mb-4">Plant Locations</h3>
@@ -66,11 +88,12 @@ export default function RootLayout({
                 </div>
               </div>
               <div>
-                <h3 className="heading-sm text-secondary mb-3 sm:mb-4">Contact</h3>
+                <h3 className="heading-sm text-secondary mb-3 sm:mb-4">Services</h3>
                 <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-text-secondary">
-                  <p>Phone: (904) 555-0123</p>
-                  <p>Email: orders@daponline.com</p>
-                  <p>Emergency: (904) 555-0124</p>
+                  <p>Hot Mix Asphalt Production</p>
+                  <p>Equipment & Tool Sales</p>
+                  <p>Custom Mix Design</p>
+                  <p>Bulk Material Supply</p>
                 </div>
               </div>
               <div className="sm:col-span-2 lg:col-span-1">
@@ -84,7 +107,7 @@ export default function RootLayout({
               </div>
             </div>
             <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-border-secondary text-center text-xs sm:text-sm text-text-muted">
-              <p>&copy; 2024 DAP Online Plant. All rights reserved.</p>
+              <p>&copy; 2024 Duval Asphalt. All rights reserved.</p>
             </div>
           </div>
         </footer>

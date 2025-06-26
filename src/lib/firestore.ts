@@ -34,23 +34,34 @@ export const createOrder = async (orderData: {
   authorizedAmount: number;
 }): Promise<string> => {
   try {
-    const order: Omit<Order, 'id'> = {
-      customerId: orderData.customerId || undefined, // Include customer ID if logged in, undefined for guests
+    // Import PICKUP_LOCATIONS here to avoid circular dependency
+    const { PICKUP_LOCATIONS } = await import('@/data/constants');
+    
+    // Find the full pickup location data
+    const pickupLocation = PICKUP_LOCATIONS.find(loc => loc.id === orderData.pickupLocationId);
+    
+    if (!pickupLocation) {
+      throw new Error(`Invalid pickup location: ${orderData.pickupLocationId}`);
+    }
+
+    const order: any = {
       customerDetails: orderData.customerDetails,
       items: orderData.items,
-      pickupLocation: {} as PickupLocation, // Will be populated with full location data
+      pickupLocation: pickupLocation,
       destination: orderData.destination,
       specialInstructions: orderData.specialInstructions,
       status: 'pending',
       paymentIntentId: orderData.paymentIntentId,
       authorizedAmount: orderData.authorizedAmount,
-      createdAt: new Date(),
+      createdAt: Timestamp.fromDate(new Date()),
     };
 
-    const docRef = await addDoc(collection(db, ORDERS_COLLECTION), {
-      ...order,
-      createdAt: Timestamp.fromDate(order.createdAt),
-    });
+    // Only include customerId if it exists (for logged-in users)
+    if (orderData.customerId) {
+      order.customerId = orderData.customerId;
+    }
+
+    const docRef = await addDoc(collection(db, ORDERS_COLLECTION), order);
 
     return docRef.id;
   } catch (error) {

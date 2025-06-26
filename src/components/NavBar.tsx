@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function NavBar() {
@@ -23,12 +24,21 @@ export default function NavBar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo - responsive sizing */}
           <div className="flex items-center min-w-0 flex-1">
-            <h1 className="nav-brand text-lg sm:text-xl lg:text-2xl truncate">
-              DAP Online Plant
-            </h1>
-            <span className="hidden sm:inline ml-2 text-xs sm:text-sm text-text-muted">
-              Asphalt & Equipment Store
-            </span>
+            <Link href="/" className="flex items-center space-x-3">
+              <Image
+                src="/DA_Logo.jpeg"
+                alt="Duval Asphalt"
+                width={120}
+                height={40}
+                className="h-8 sm:h-10 w-auto object-contain"
+                priority
+              />
+              <div className="hidden sm:block">
+                <span className="text-xs sm:text-sm text-text-muted">
+                  Online Plant Store
+                </span>
+              </div>
+            </Link>
           </div>
           
           {/* Desktop Navigation */}

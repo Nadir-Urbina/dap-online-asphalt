@@ -288,13 +288,13 @@ const OrderManagementModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-gray-900">Manage Order: {order.id?.slice(0, 8)}...</h3>
+    <div className="fixed inset-0 bg-bg-primary bg-opacity-75 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-6 border border-border-primary w-11/12 md:w-3/4 lg:w-1/2 shadow-xl rounded-lg bg-bg-surface">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="heading-lg text-text-primary">Manage Order: {order.id?.slice(0, 8)}...</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-text-muted hover:text-text-secondary transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -304,33 +304,37 @@ const OrderManagementModal = ({
 
         <div className="space-y-6">
           {/* Order Details */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Order Details</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Customer:</span> {order.customerDetails.firstName} {order.customerDetails.lastName}
-              </div>
-              <div>
-                <span className="font-medium">Email:</span> {order.customerDetails.email}
-              </div>
-              <div>
-                <span className="font-medium">Mix:</span> {mixDetails?.name}
-              </div>
-              <div>
-                <span className="font-medium">Original Tonnage:</span> {originalTonnage} tons
-              </div>
-              <div>
-                <span className="font-medium">Authorized Amount:</span> ${order.authorizedAmount.toFixed(2)}
-              </div>
-              <div>
-                <span className="font-medium">Price per Ton:</span> ${mixDetails?.pricePerTon}/ton
+          <div className="card">
+            <div className="card-header">
+              <h4 className="heading-sm text-text-primary">Order Details</h4>
+            </div>
+            <div className="card-body">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="text-text-secondary">
+                  <span className="font-medium text-text-primary">Customer:</span> {order.customerDetails.firstName} {order.customerDetails.lastName}
+                </div>
+                <div className="text-text-secondary">
+                  <span className="font-medium text-text-primary">Email:</span> {order.customerDetails.email}
+                </div>
+                <div className="text-text-secondary">
+                  <span className="font-medium text-text-primary">Mix:</span> {mixDetails?.name}
+                </div>
+                <div className="text-text-secondary">
+                  <span className="font-medium text-text-primary">Original Tonnage:</span> {originalTonnage} tons
+                </div>
+                <div className="text-text-secondary">
+                  <span className="font-medium text-text-primary">Authorized Amount:</span> ${order.authorizedAmount.toFixed(2)}
+                </div>
+                <div className="text-text-secondary">
+                  <span className="font-medium text-text-primary">Price per Ton:</span> ${mixDetails?.pricePerTon}/ton
+                </div>
               </div>
             </div>
           </div>
 
           {/* Actual Tonnage Input */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="form-label">
               Actual Tonnage Delivered
             </label>
             <input
@@ -339,57 +343,65 @@ const OrderManagementModal = ({
               min="0"
               value={actualTonnage}
               onChange={(e) => setActualTonnage(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="form-input"
             />
           </div>
 
           {/* Payment Summary */}
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Payment Summary</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Authorized Amount (110%):</span>
-                <span>${order.authorizedAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Estimated Order:</span>
-                <span>${(order.authorizedAmount / 1.1).toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-semibold">
-                <span>Final Charge ({actualTonnage} tons):</span>
-                <span className="text-green-600">${actualAmount.toFixed(2)}</span>
-              </div>
-              {actualAmount <= order.authorizedAmount ? (
-                <div className="text-sm text-green-600 mt-2">
-                  ✅ Amount is within authorized limit - will capture ${actualAmount.toFixed(2)}
+          <div className="card">
+            <div className="card-header">
+              <h4 className="heading-sm text-text-primary">Payment Summary</h4>
+            </div>
+            <div className="card-body">
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between text-text-secondary">
+                  <span>Authorized Amount (110%):</span>
+                  <span className="font-medium text-text-primary">${order.authorizedAmount.toFixed(2)}</span>
                 </div>
-              ) : (
-                <div className="text-sm text-red-600 mt-2">
-                  ⚠️ Amount exceeds authorization by ${(actualAmount - order.authorizedAmount).toFixed(2)} - will capture maximum authorized amount
+                <div className="flex justify-between text-text-secondary">
+                  <span>Estimated Order:</span>
+                  <span className="font-medium text-text-primary">${(order.authorizedAmount / 1.1).toFixed(2)}</span>
                 </div>
-              )}
+                <div className="flex justify-between font-semibold border-t border-border-primary pt-3">
+                  <span className="text-text-primary">Final Charge ({actualTonnage} tons):</span>
+                  <span className="text-secondary text-lg">${actualAmount.toFixed(2)}</span>
+                </div>
+                {actualAmount <= order.authorizedAmount ? (
+                  <div className="bg-green-50 border border-green-200 rounded-md p-3 mt-3">
+                    <div className="text-sm text-green-800">
+                      ✅ Amount is within authorized limit - will capture ${actualAmount.toFixed(2)}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-3 mt-3">
+                    <div className="text-sm text-red-800">
+                      ⚠️ Amount exceeds authorization by ${(actualAmount - order.authorizedAmount).toFixed(2)} - will capture maximum authorized amount
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Process Order Info */}
-          <div className="bg-green-50 border border-green-200 rounded-md p-3">
+          <div className="bg-green-50 border border-green-200 rounded-md p-4">
             <p className="text-sm text-green-800">
               <span className="font-medium">Ready to Process:</span> This will capture the payment for the actual tonnage delivered and mark the order as completed.
             </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end space-x-3">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-border-primary">
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-6 py-2 border border-border-primary rounded-md shadow-sm text-sm font-medium text-text-secondary bg-bg-surface-light hover:bg-bg-surface hover:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary"
             >
               Cancel
             </button>
             <button
               onClick={handleProcessOrder}
               disabled={processing}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {processing ? 'Processing...' : 'Process Order'}
             </button>
