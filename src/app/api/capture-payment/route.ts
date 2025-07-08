@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import stripe from '@/lib/stripe-server';
+import { updateOrderStatus } from '@/lib/firestore';
+import { Load } from '@/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,7 +9,10 @@ export async function POST(request: NextRequest) {
       paymentIntentId, 
       actualAmount, 
       authorizedAmount,
-      orderId 
+      orderId,
+      isPartialPayment = false,
+      deliveredTonnage,
+      loads = [] // Accept loads array
     } = await request.json();
 
     // Validate inputs
@@ -24,10 +29,65 @@ export async function POST(request: NextRequest) {
     // Determine the amount to capture (never exceed authorized amount)
     const captureAmount = Math.min(actualAmountCents, authorizedAmountCents);
 
-    // Capture the payment
+    // Prepare Stripe metadata with load information
+    const stripeMetadata: Record<string, string> = {
+      order_id: orderId || '',
+      capture_date: new Date().toISOString(),
+      delivered_tonnage: deliveredTonnage?.toString() || '0',
+    };
+
+    // Add load information if loads are provided
+    if (loads && loads.length > 0) {
+      // Format load summary: "Load1:25.5t(T001)|Load2:23.2t(T002)|Load3:24.8t(T003)"
+      const loadSummary = loads.map((load: Load) => 
+        `Load${load.loadNumber}:${load.tonnageDelivered}t(${load.ticketNumber || 'N/A'})`
+      ).join('|');
+
+      // Extract ticket numbers: "T001,T002,T003"
+      const ticketNumbers = loads
+        .map((load: Load) => load.ticketNumber || 'N/A')
+        .join(',');
+
+      // Additional metadata with load details
+      stripeMetadata.load_count = loads.length.toString();
+      stripeMetadata.load_summary = loadSummary;
+      stripeMetadata.ticket_numbers = ticketNumbers;
+      
+      // Add truck information if available
+      const truckIds = loads
+        .map((load: Load) => load.truckId || 'N/A')
+        .filter(truck => truck !== 'N/A')
+        .join(',');
+      
+      if (truckIds) {
+        stripeMetadata.truck_ids = truckIds;
+      }
+
+      // Add delivery time range
+      const deliveryTimes = loads.map(load => new Date(load.deliveryTime));
+      const firstDelivery = new Date(Math.min(...deliveryTimes.map(d => d.getTime())));
+      const lastDelivery = new Date(Math.max(...deliveryTimes.map(d => d.getTime())));
+      
+      stripeMetadata.first_delivery = firstDelivery.toISOString();
+      stripeMetadata.last_delivery = lastDelivery.toISOString();
+    }
+
+    // Capture the payment with metadata
     const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId, {
       amount_to_capture: captureAmount,
+      metadata: stripeMetadata,
     });
+
+    // Update order status based on payment type
+    let orderUpdateData: any = {
+      finalAmount: captureAmount / 100,
+    };
+
+    // Always complete the order when processing payment for delivered loads
+    orderUpdateData.actualTonnage = deliveredTonnage;
+    if (orderId) {
+      await updateOrderStatus(orderId, 'completed', orderUpdateData);
+    }
 
     // Prepare response with message based on capture scenario
     let message: string;
@@ -35,6 +95,9 @@ export async function POST(request: NextRequest) {
 
     if (actualAmountCents <= authorizedAmountCents) {
       message = `Payment captured successfully: $${(captureAmount / 100).toFixed(2)}`;
+      if (loads && loads.length > 0) {
+        message += ` for ${loads.length} load(s) totaling ${deliveredTonnage} tons`;
+      }
     } else {
       message = `Captured maximum authorized amount: $${(captureAmount / 100).toFixed(2)}. Actual amount of $${actualAmount.toFixed(2)} exceeded authorization by $${(actualAmount - authorizedAmount).toFixed(2)}.`;
       excess_amount = actualAmount - authorizedAmount;
@@ -48,6 +111,9 @@ export async function POST(request: NextRequest) {
       actual_amount_dollars: actualAmount,
       payment_intent: paymentIntent,
       message,
+      is_partial_payment: isPartialPayment,
+      load_count: loads?.length || 0,
+      stripe_metadata: stripeMetadata, // Include metadata in response for debugging
       ...(excess_amount !== undefined && { excess_amount }),
     };
 

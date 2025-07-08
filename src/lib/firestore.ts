@@ -44,17 +44,42 @@ export const createOrder = async (orderData: {
       throw new Error(`Invalid pickup location: ${orderData.pickupLocationId}`);
     }
 
+    // Calculate original tonnage from items (assuming first item is the asphalt order)
+    const originalTonnage = orderData.items[0]?.tonnage || 0;
+    const maxAllowedTonnage = originalTonnage * 1.1; // 110% limit
+    
+    // Determine if this is likely a multi-load order (arbitrary threshold of 50 tons)
+    const isMultiLoad = originalTonnage >= 50;
+
     const order: any = {
       customerDetails: orderData.customerDetails,
       items: orderData.items,
       pickupLocation: pickupLocation,
-      destination: orderData.destination,
-      specialInstructions: orderData.specialInstructions,
       status: 'pending',
       paymentIntentId: orderData.paymentIntentId,
       authorizedAmount: orderData.authorizedAmount,
+      
+      // Load tracking fields
+      originalTonnage,
+      totalDelivered: 0,
+      maxAllowedTonnage,
+      loads: [],
+      isMultiLoad,
+      
+      // Payment tracking
+      paymentStrategy: 'full_upfront', // Default strategy
+      paidLoads: [],
+      
       createdAt: Timestamp.fromDate(new Date()),
     };
+
+    // Only include optional fields if they have values
+    if (orderData.destination) {
+      order.destination = orderData.destination;
+    }
+    if (orderData.specialInstructions) {
+      order.specialInstructions = orderData.specialInstructions;
+    }
 
     // Only include customerId if it exists (for logged-in users)
     if (orderData.customerId) {
@@ -77,11 +102,22 @@ export const getOrder = async (orderId: string): Promise<Order | null> => {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
+      
+      // Convert timestamps in loads array
+      const loads = data.loads?.map((load: any) => ({
+        ...load,
+        deliveryTime: load.deliveryTime?.toDate ? load.deliveryTime.toDate() : load.deliveryTime,
+        createdAt: load.createdAt?.toDate ? load.createdAt.toDate() : load.createdAt,
+      })) || [];
+      
       return {
         id: docSnap.id,
         ...data,
+        loads,
         createdAt: data.createdAt.toDate(),
         estimatedReadyTime: data.estimatedReadyTime?.toDate(),
+        completedAt: data.completedAt?.toDate(),
+        lastPaymentDate: data.lastPaymentDate?.toDate(),
       } as Order;
     }
 
@@ -112,11 +148,22 @@ export const getAllOrders = async (status?: string): Promise<Order[]> => {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
+      
+      // Convert timestamps in loads array
+      const loads = data.loads?.map((load: any) => ({
+        ...load,
+        deliveryTime: load.deliveryTime?.toDate ? load.deliveryTime.toDate() : load.deliveryTime,
+        createdAt: load.createdAt?.toDate ? load.createdAt.toDate() : load.createdAt,
+      })) || [];
+      
       orders.push({
         id: doc.id,
         ...data,
+        loads,
         createdAt: data.createdAt.toDate(),
         estimatedReadyTime: data.estimatedReadyTime?.toDate(),
+        completedAt: data.completedAt?.toDate(),
+        lastPaymentDate: data.lastPaymentDate?.toDate(),
       } as Order);
     });
 
@@ -129,16 +176,23 @@ export const getAllOrders = async (status?: string): Promise<Order[]> => {
 
 export const updateOrderStatus = async (
   orderId: string, 
-  status: Order['status'],
+  status?: Order['status'], // Made optional for partial payments
   additionalData?: {
     finalAmount?: number;
     estimatedReadyTime?: Date;
     actualTonnage?: number;
+    partialPaymentAmount?: number;
+    lastPaymentDate?: Date;
   }
 ): Promise<void> => {
   try {
     const docRef = doc(db, ORDERS_COLLECTION, orderId);
-    const updateData: any = { status };
+    const updateData: any = {};
+
+    // Only update status if provided
+    if (status !== undefined) {
+      updateData.status = status;
+    }
 
     if (additionalData?.finalAmount !== undefined) {
       updateData.finalAmount = additionalData.finalAmount;
@@ -150,6 +204,14 @@ export const updateOrderStatus = async (
 
     if (additionalData?.actualTonnage !== undefined) {
       updateData.actualTonnage = additionalData.actualTonnage;
+    }
+
+    if (additionalData?.partialPaymentAmount !== undefined) {
+      updateData.partialPaymentAmount = additionalData.partialPaymentAmount;
+    }
+
+    if (additionalData?.lastPaymentDate) {
+      updateData.lastPaymentDate = Timestamp.fromDate(additionalData.lastPaymentDate);
     }
 
     await updateDoc(docRef, updateData);

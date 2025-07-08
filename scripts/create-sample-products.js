@@ -78,7 +78,7 @@ async function createSampleProducts() {
   
   for (const product of sampleProducts) {
     try {
-      const response = await fetch('http://localhost:3111/api/admin/products', {
+      const response = await fetch('http://localhost:3000/api/admin/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ async function createSampleProducts() {
   console.log(`   - ${sampleProducts.filter(p => p.type === 'equipment').length} Equipment`);
   console.log(`   - ${sampleProducts.filter(p => p.type === 'part').length} Parts`);
   console.log(`   - ${sampleProducts.filter(p => p.type === 'supplies').length} Supplies`);
-  console.log('\n🔗 Visit http://localhost:3111/admin to manage products');
+  console.log('\n🔗 Visit http://localhost:3000/admin to manage products');
 }
 
 // Run the script

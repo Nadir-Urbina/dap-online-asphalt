@@ -43,7 +43,8 @@ export default function NavBar() {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-8">
-            <Link href="/" className="nav-link text-sm lg:text-base">Orders</Link>
+            <Link href="/" className="nav-link text-sm lg:text-base">Home</Link>
+            <Link href="/order" className="nav-link text-sm lg:text-base">Place Order</Link>
             <a href="#" className="nav-link text-sm lg:text-base">Products</a>
             
             {user ? (
@@ -84,8 +85,8 @@ export default function NavBar() {
               </div>
             ) : (
               <div className="flex items-center space-x-4">
+                <Link href="/login" className="nav-link text-sm lg:text-base">Customer Login</Link>
                 <a href="/admin" className="nav-link text-sm lg:text-base">Staff Login</a>
-                <span className="nav-link text-sm lg:text-base cursor-pointer">Account</span>
               </div>
             )}
           </nav>
@@ -121,7 +122,14 @@ export default function NavBar() {
               className="block px-3 py-2 text-base font-medium text-text-secondary hover:text-secondary hover:bg-bg-surface-light rounded-md"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Orders
+              Home
+            </Link>
+            <Link
+              href="/order"
+              className="block px-3 py-2 text-base font-medium text-text-secondary hover:text-secondary hover:bg-bg-surface-light rounded-md"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Place Order
             </Link>
             <a
               href="#"
@@ -173,19 +181,19 @@ export default function NavBar() {
               </>
             ) : (
               <>
+                <Link
+                  href="/login"
+                  className="block px-3 py-2 text-base font-medium text-text-secondary hover:text-secondary hover:bg-bg-surface-light rounded-md"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Customer Login
+                </Link>
                 <a
                   href="/admin"
                   className="block px-3 py-2 text-base font-medium text-text-secondary hover:text-secondary hover:bg-bg-surface-light rounded-md"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Staff Login
-                </a>
-                <a
-                  href="#"
-                  className="block px-3 py-2 text-base font-medium text-text-secondary hover:text-secondary hover:bg-bg-surface-light rounded-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Account
                 </a>
               </>
             )}

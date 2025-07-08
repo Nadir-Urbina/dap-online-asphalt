@@ -9,8 +9,24 @@ import { AsphaltMix } from '@/types';
 
 const orderSchema = z.object({
   mixType: z.string().min(1, 'Please select an asphalt mix'),
-  tonnage: z.number().min(1, 'Tonnage must be at least 1 ton').max(100, 'Maximum order is 100 tons'),
-  pickupDate: z.string().min(1, 'Please select a pickup date'),
+  tonnage: z.number().min(0.5, 'Tonnage must be at least 0.5 tons'),
+  pickupDate: z.string().min(1, 'Please select a pickup date').refine((date) => {
+    const selectedDate = new Date(date + 'T00:00:00');
+    const today = new Date();
+    
+    // Compare using ISO date strings for consistency
+    const selectedDateString = selectedDate.toISOString().split('T')[0];
+    const todayString = today.toISOString().split('T')[0];
+    
+    console.log('Date validation debug:', {
+      inputDate: date,
+      selectedDateString,
+      todayString,
+      isValid: selectedDateString >= todayString
+    });
+    
+    return selectedDateString >= todayString;
+  }, 'Pickup date cannot be in the past'),
   pickupTime: z.string().min(1, 'Please select a pickup time'),
   customerDetails: z.object({
     firstName: z.string().min(1, 'First name is required'),
@@ -26,6 +42,38 @@ const orderSchema = z.object({
   pickupLocationId: z.string().min(1, 'Please select a pickup location'),
   destination: z.string().optional(),
   specialInstructions: z.string().optional(),
+}).refine((data) => {
+  // If pickup date is today, ensure pickup time is in the future
+  if (!data.pickupDate || !data.pickupTime) return true;
+  
+  const selectedDate = new Date(data.pickupDate + 'T00:00:00');
+  const today = new Date();
+  
+  // Check if the selected date is today using ISO date strings
+  const selectedDateString = selectedDate.toISOString().split('T')[0];
+  const todayString = today.toISOString().split('T')[0];
+  
+  if (selectedDateString === todayString) {
+    const currentHour = today.getHours();
+    const currentMinutes = today.getMinutes();
+    const selectedHour = parseInt(data.pickupTime);
+    
+    console.log('Debug validation:', {
+      currentTime: `${currentHour}:${currentMinutes}`,
+      selectedHour,
+      currentHour,
+      requiredMinHour: currentHour + 2,
+      isValid: selectedHour >= currentHour + 2
+    });
+    
+    // Must be at least 2 hours from now to allow for processing time
+    return selectedHour >= currentHour + 2;
+  }
+  
+  return true;
+}, {
+  message: "For same-day pickup, time must be at least 2 hours from now",
+  path: ["pickupTime"]
 });
 
 type OrderFormData = z.infer<typeof orderSchema>;
@@ -69,6 +117,29 @@ export default function AsphaltOrderForm({ onSubmit, isLoading = false }: Asphal
     }
   }, [mixType, tonnage]);
 
+  // Clear pickup time if it becomes invalid when date changes
+  React.useEffect(() => {
+    if (pickupDate && pickupTime) {
+      const selectedDate = new Date(pickupDate + 'T00:00:00'); // Ensure consistent parsing
+      const today = new Date();
+      
+      // Check if selected date is today
+      const selectedDateString = selectedDate.toISOString().split('T')[0];
+      const todayString = today.toISOString().split('T')[0];
+      const isToday = selectedDateString === todayString;
+      
+      if (isToday) {
+        const currentHour = today.getHours();
+        const selectedHour = parseInt(pickupTime);
+        
+        // If it's today and selected time is no longer valid, clear it
+        if (selectedHour < currentHour + 2) {
+          setValue('pickupTime', '');
+        }
+      }
+    }
+  }, [pickupDate, pickupTime, setValue]);
+
   // Check for overtime charges
   React.useEffect(() => {
     if (pickupDate && pickupTime) {
@@ -90,14 +161,47 @@ export default function AsphaltOrderForm({ onSubmit, isLoading = false }: Asphal
     onSubmit(data);
   };
 
-  // Generate time options (7 AM to 6 PM)
-  const timeOptions = [];
-  for (let hour = 7; hour <= 18; hour++) {
-    const time12 = hour > 12 ? hour - 12 : hour;
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayTime = `${time12}:00 ${ampm}`;
-    timeOptions.push({ value: hour, label: displayTime });
-  }
+  // Generate time options (7 AM to 6 PM) with validation for today
+  const generateTimeOptions = () => {
+    const options = [];
+    
+    if (!pickupDate) {
+      // If no date selected, show all times
+      for (let hour = 7; hour <= 18; hour++) {
+        const time12 = hour > 12 ? hour - 12 : hour;
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayTime = `${time12}:00 ${ampm}`;
+        options.push({ value: hour, label: displayTime });
+      }
+      return options;
+    }
+    
+    const selectedDate = new Date(pickupDate + 'T00:00:00'); // Ensure consistent parsing
+    const today = new Date();
+    
+    // Check if selected date is today using ISO date strings
+    const selectedDateString = selectedDate.toISOString().split('T')[0];
+    const todayString = today.toISOString().split('T')[0];
+    const isToday = selectedDateString === todayString;
+    
+    const currentHour = today.getHours();
+    
+    for (let hour = 7; hour <= 18; hour++) {
+      // If it's today, only show times that are at least 2 hours from now
+      if (isToday && hour < currentHour + 2) {
+        continue;
+      }
+      
+      const time12 = hour > 12 ? hour - 12 : hour;
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const displayTime = `${time12}:00 ${ampm}`;
+      options.push({ value: hour, label: displayTime });
+    }
+    
+    return options;
+  };
+
+  const timeOptions = generateTimeOptions();
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 card">
@@ -148,11 +252,10 @@ export default function AsphaltOrderForm({ onSubmit, isLoading = false }: Asphal
           <input
             type="number"
             step="0.5"
-            min="1"
-            max="100"
+            min="0.5"
             {...register('tonnage', { valueAsNumber: true })}
             className="form-input"
-            placeholder="Enter tonnage (1-100 tons)"
+            placeholder="Enter tonnage"
           />
           {errors.tonnage && (
             <p className="mt-1 text-sm text-red-600">{errors.tonnage.message}</p>
@@ -195,6 +298,17 @@ export default function AsphaltOrderForm({ onSubmit, isLoading = false }: Asphal
               </select>
               {errors.pickupTime && (
                 <p className="mt-1 text-sm text-red-600">{errors.pickupTime.message}</p>
+              )}
+              {pickupDate && (() => {
+                const selectedDate = new Date(pickupDate + 'T00:00:00');
+                const today = new Date();
+                const selectedDateString = selectedDate.toISOString().split('T')[0];
+                const todayString = today.toISOString().split('T')[0];
+                return selectedDateString === todayString;
+              })() && (
+                <p className="mt-1 text-sm text-white-600">
+                  Same-day pickup requires at least 2 hours advance notice for processing.
+                </p>
               )}
             </div>
           </div>

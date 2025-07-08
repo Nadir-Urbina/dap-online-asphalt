@@ -71,6 +71,21 @@ export interface OrderItem {
   mixType?: string; // For asphalt orders
 }
 
+// New Load Tracking Interfaces
+export interface Load {
+  id: string;
+  loadNumber: number; // Sequential load number (1, 2, 3, etc.)
+  tonnageDelivered: number;
+  deliveryTime: Date;
+  truckId?: string; // Optional truck identifier
+  driverName?: string; // Optional driver name
+  ticketNumber?: string; // Plant ticket/receipt number
+  notes?: string; // Any delivery notes
+  status: 'scheduled' | 'in_transit' | 'delivered' | 'cancelled';
+  createdAt: Date;
+  createdBy: string; // uid of plant operator who created this load
+}
+
 export interface Order {
   id: string;
   customerId?: string; // null for guest checkout
@@ -79,18 +94,54 @@ export interface Order {
   pickupLocation: PickupLocation;
   destination?: string;
   specialInstructions?: string;
-  status: 'pending' | 'authorized' | 'confirmed' | 'in_production' | 'ready' | 'completed' | 'cancelled';
+  status: 'pending' | 'authorized' | 'confirmed' | 'in_production' | 'ready' | 'partial_delivery' | 'completed' | 'cancelled';
   paymentIntentId?: string; // Stripe payment intent for authorization
   authorizedAmount: number;
   finalAmount?: number;
+  
+  // Partial Payment Tracking
+  partialPaymentAmount?: number; // Total amount captured in partial payments
+  lastPaymentDate?: Date; // When the last payment was processed
+  
+  // Load Tracking Fields
+  originalTonnage: number; // The original ordered tonnage
+  totalDelivered: number; // Running total of all loads delivered
+  maxAllowedTonnage: number; // originalTonnage * 1.1 (110% limit)
+  loads: Load[]; // Array of all loads for this order
+  isMultiLoad: boolean; // Flag to indicate if this order expects multiple loads
+  
+  // Payment Tracking
+  paymentStrategy: 'full_upfront' | 'per_load' | 'completion'; // How payment is handled
+  paidLoads: string[]; // Array of load IDs that have been paid for
+  
   createdAt: Date;
   estimatedReadyTime?: Date;
+  completedAt?: Date; // When the entire order was completed
 }
 
 export interface PaymentAuthorization {
   paymentIntentId: string;
   authorizedAmount: number;
   status: 'requires_payment_method' | 'requires_confirmation' | 'requires_action' | 'processing' | 'requires_capture' | 'canceled' | 'succeeded';
+}
+
+// Load Management Types
+export interface LoadSummary {
+  totalLoads: number;
+  totalDelivered: number;
+  remainingTonnage: number;
+  percentComplete: number;
+  canAddMoreLoads: boolean; // Based on 110% limit
+  maxAdditionalTonnage: number; // How much more can be delivered
+}
+
+export interface CreateLoadRequest {
+  orderId: string;
+  tonnageDelivered: number;
+  truckId?: string;
+  driverName?: string;
+  ticketNumber?: string;
+  notes?: string;
 }
 
 // Authentication & Authorization Types

@@ -12,7 +12,7 @@ export const customerDetailsSchema = z.object({
 export const orderItemSchema = z.object({
   productId: z.string().min(1, 'Product ID is required'),
   quantity: z.number().min(1, 'Quantity must be at least 1'),
-  tonnage: z.number().min(0.5, 'Minimum tonnage is 0.5 tons').max(100, 'Maximum tonnage is 100 tons').optional(),
+  tonnage: z.number().min(0.5, 'Minimum tonnage is 0.5 tons').optional(),
   mixType: z.string().optional(),
 });
 
