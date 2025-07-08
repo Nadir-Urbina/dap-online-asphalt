@@ -165,7 +165,6 @@ function CheckoutContent() {
               customerEmail={orderData.email}
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
-              isProcessing={isProcessing}
             />
           </div>
 

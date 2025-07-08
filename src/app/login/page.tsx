@@ -42,7 +42,7 @@ export default function LoginPage() {
         </div>
 
         <div className="card card-body">
-          <LoginForm onLoginSuccess={handleLoginSuccess} />
+          <LoginForm onSuccess={handleLoginSuccess} />
           
           <div className="mt-6 text-center">
             <p className="text-text-secondary text-sm">

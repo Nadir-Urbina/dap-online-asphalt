@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       // Add truck information if available
       const truckIds = loads
         .map((load: Load) => load.truckId || 'N/A')
-        .filter(truck => truck !== 'N/A')
+        .filter((truck: string) => truck !== 'N/A')
         .join(',');
       
       if (truckIds) {
@@ -64,9 +64,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Add delivery time range
-      const deliveryTimes = loads.map(load => new Date(load.deliveryTime));
-      const firstDelivery = new Date(Math.min(...deliveryTimes.map(d => d.getTime())));
-      const lastDelivery = new Date(Math.max(...deliveryTimes.map(d => d.getTime())));
+      const deliveryTimes = loads.map((load: Load) => new Date(load.deliveryTime));
+      const firstDelivery = new Date(Math.min(...deliveryTimes.map((d: Date) => d.getTime())));
+      const lastDelivery = new Date(Math.max(...deliveryTimes.map((d: Date) => d.getTime())));
       
       stripeMetadata.first_delivery = firstDelivery.toISOString();
       stripeMetadata.last_delivery = lastDelivery.toISOString();
